@@ -73,5 +73,9 @@ class ModelManager:
             loaders.append((".joblib", joblib.load))
         except ImportError:
             pass
-        loaders.append((".pkl", lambda path: pickle.load(open(path, "rb"))))  # noqa: SIM115
+        def _load_pickle(path: str) -> object:
+            with open(path, "rb") as fh:
+                return pickle.load(fh)  # noqa: S301
+
+        loaders.append((".pkl", _load_pickle))
         return loaders

@@ -112,7 +112,7 @@ class XSSDetector:
                 matched.append(name)
                 max_confidence = max(max_confidence, weight)
 
-        is_threat = max_confidence >= 0.7 and len(matched) > 0
+        is_threat = max_confidence >= 0.7 and len(matched) > 0  # baseline regex threshold
         return is_threat, max_confidence, matched
 
     def _ml_detect(self, features: dict) -> tuple[bool, float]:
