@@ -46,6 +46,15 @@ class RuleEngine:
                     rule.get("pattern", ""),
                 )
 
+    def get_rules(self) -> list[dict]:
+        """Return a copy of the currently loaded rules."""
+        return list(self._rules)
+
+    def add_rule(self, rule: dict) -> None:
+        """Append *rule* and recompile all patterns."""
+        self._rules.append(rule)
+        self.load_rules(self._rules)
+
     def evaluate(self, parsed_request: ParsedRequest) -> list[DetectionResult]:
         """Evaluate *parsed_request* against all loaded rules.
 

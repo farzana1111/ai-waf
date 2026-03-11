@@ -169,6 +169,14 @@ class Settings:
     def rate_limiting(self) -> dict:
         return self.get("detection", "rate_limiting", default={})
 
+    def update(self, overrides: dict) -> None:
+        """Merge *overrides* into the live configuration."""
+        for key, value in overrides.items():
+            if isinstance(value, dict) and isinstance(self._data.get(key), dict):
+                self._data[key].update(value)
+            else:
+                self._data[key] = value
+
     def as_dict(self) -> dict:
         """Return the full resolved configuration as a dictionary."""
         return self._data.copy()

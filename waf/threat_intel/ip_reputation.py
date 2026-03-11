@@ -67,6 +67,14 @@ class IPReputationChecker:
         self._allowlist.add(ip)
         logger.info("IP %s added to allowlist", ip)
 
+    def get_blocklist(self) -> dict[str, dict]:
+        """Return a copy of the current blocklist."""
+        return dict(self._blocklist)
+
+    def is_blocked(self, ip: str) -> bool:
+        """Return whether *ip* is on the blocklist."""
+        return ip in self._blocklist
+
     def remove_from_blocklist(self, ip: str) -> None:
         """Remove *ip* from the blocklist if present."""
         if self._blocklist.pop(ip, None) is not None:

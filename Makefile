@@ -22,10 +22,10 @@ train:
 	python -m training.train_models
 
 docker-build:
-	docker compose -f docker/docker-compose.yml build
+	docker compose -f docker/docker-compose.yaml build
 
 docker-up:
-	docker compose -f docker/docker-compose.yml up -d
+	docker compose -f docker/docker-compose.yaml up -d
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

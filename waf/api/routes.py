@@ -84,7 +84,7 @@ def list_rules():
             "target": rule.get("target"),
             "action": rule.get("action"),
         }
-        for rule in _rule_engine._rules
+        for rule in _rule_engine.get_rules()
     ]
     return jsonify({"rules": rules, "count": len(rules)})
 
@@ -103,8 +103,7 @@ def add_rule():
     if missing:
         return jsonify({"error": f"Missing fields: {', '.join(sorted(missing))}"}), 400
 
-    _rule_engine._rules.append(data)
-    _rule_engine.load_rules(_rule_engine._rules)
+    _rule_engine.add_rule(data)
     logger.info("Rule added via API: %s", data.get("id"))
     return jsonify({"message": "Rule added", "rule_id": data["id"]}), 201
 
@@ -147,12 +146,7 @@ def update_config():
         return jsonify({"error": "Invalid JSON body"}), 400
 
     settings: Settings = current_app.config.get("WAF_SETTINGS", Settings())
-    # Merge top-level keys into the live configuration
-    for key, value in data.items():
-        if isinstance(value, dict) and isinstance(settings._data.get(key), dict):
-            settings._data[key].update(value)
-        else:
-            settings._data[key] = value
+    settings.update(data)
 
     logger.info("Configuration updated via API")
     return jsonify({"message": "Configuration updated"})
@@ -167,9 +161,10 @@ def update_config():
 def get_blocklist():
     """Return the current IP blocklist."""
     _ensure_components()
+    blocklist_data = _ip_checker.get_blocklist()
     blocklist = {
         ip: {"reason": entry.get("reason", ""), "added_at": entry.get("added_at")}
-        for ip, entry in _ip_checker._blocklist.items()
+        for ip, entry in blocklist_data.items()
     }
     return jsonify({"blocklist": blocklist, "count": len(blocklist)})
 
@@ -194,7 +189,7 @@ def add_to_blocklist():
 def remove_from_blocklist(ip: str):
     """Remove an IP address from the blocklist."""
     _ensure_components()
-    if ip not in _ip_checker._blocklist:
+    if not _ip_checker.is_blocked(ip):
         return jsonify({"error": f"IP {ip} not found in blocklist"}), 404
 
     _ip_checker.remove_from_blocklist(ip)
