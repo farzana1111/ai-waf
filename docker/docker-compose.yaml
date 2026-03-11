@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  waf:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "5000:5000"
+      - "9090:9090"
+    environment:
+      - WAF_BACKEND_URL=http://backend:8080
+      - WAF_LOG_LEVEL=INFO
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+    depends_on:
+      - backend
+  backend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"

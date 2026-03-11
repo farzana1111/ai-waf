@@ -75,8 +75,9 @@ def create_app(config=None) -> Flask:
 
     @app.before_request
     def waf_intercept():
-        # Let the health-check endpoint bypass the WAF pipeline.
-        if request.path == "/health":
+        # Let the health-check and management API endpoints bypass
+        # the WAF pipeline.
+        if request.path == "/health" or request.path.startswith("/api/"):
             return None
 
         parsed = parse_flask_request(request)
