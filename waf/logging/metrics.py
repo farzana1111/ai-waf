@@ -7,12 +7,11 @@ works without any extra dependencies.
 
 import logging
 import threading
-import time
 
 logger = logging.getLogger(__name__)
 
 try:
-    from prometheus_client import Counter, Histogram, Info  # type: ignore[import-untyped]
+    from prometheus_client import Counter, Histogram  # type: ignore[import-untyped]
 
     _HAS_PROMETHEUS = True
 except ImportError:

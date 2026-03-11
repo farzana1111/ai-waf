@@ -1,7 +1,6 @@
 """Model loading and lifecycle management."""
 
 import logging
-import os
 import pickle
 from pathlib import Path
 
@@ -73,6 +72,7 @@ class ModelManager:
             loaders.append((".joblib", joblib.load))
         except ImportError:
             pass
+
         def _load_pickle(path: str) -> object:
             with open(path, "rb") as fh:
                 return pickle.load(fh)  # noqa: S301

@@ -72,7 +72,10 @@ class TestRuleLoading:
 
     def test_invalid_regex_skipped(self, engine):
         bad_rules = [
-            {"id": "BAD", "name": "Bad Rule", "pattern": "[invalid(", "target": "all", "severity": "high", "action": "block"},
+            {
+                "id": "BAD", "name": "Bad Rule", "pattern": "[invalid(",
+                "target": "all", "severity": "high", "action": "block",
+            },
         ]
         engine.load_rules(bad_rules)
         # Rule is stored but the invalid regex won't match anything
@@ -163,7 +166,10 @@ class TestRuleTargets:
 
     def test_url_target_matches_path(self, engine):
         rules = [
-            {"id": "T1", "name": "URL Rule", "pattern": r"admin", "target": "url", "severity": "high", "action": "block"},
+            {
+                "id": "T1", "name": "URL Rule", "pattern": r"admin",
+                "target": "url", "severity": "high", "action": "block",
+            },
         ]
         engine.load_rules(rules)
         req = make_parsed_request(path="/admin/panel")
@@ -172,7 +178,10 @@ class TestRuleTargets:
 
     def test_body_target_ignores_url(self, engine):
         rules = [
-            {"id": "T2", "name": "Body Rule", "pattern": r"secret", "target": "body", "severity": "high", "action": "block"},
+            {
+                "id": "T2", "name": "Body Rule", "pattern": r"secret",
+                "target": "body", "severity": "high", "action": "block",
+            },
         ]
         engine.load_rules(rules)
         req = make_parsed_request(path="/secret", body="nothing here")
@@ -181,7 +190,10 @@ class TestRuleTargets:
 
     def test_body_target_matches_body(self, engine):
         rules = [
-            {"id": "T3", "name": "Body Rule", "pattern": r"secret", "target": "body", "severity": "high", "action": "block"},
+            {
+                "id": "T3", "name": "Body Rule", "pattern": r"secret",
+                "target": "body", "severity": "high", "action": "block",
+            },
         ]
         engine.load_rules(rules)
         req = make_parsed_request(body="this is a secret")
@@ -190,7 +202,10 @@ class TestRuleTargets:
 
     def test_headers_target(self, engine):
         rules = [
-            {"id": "T4", "name": "Header Rule", "pattern": r"evil-agent", "target": "headers", "severity": "medium", "action": "log"},
+            {
+                "id": "T4", "name": "Header Rule", "pattern": r"evil-agent",
+                "target": "headers", "severity": "medium", "action": "log",
+            },
         ]
         engine.load_rules(rules)
         req = make_parsed_request(headers={"User-Agent": "evil-agent/1.0"})
@@ -210,7 +225,10 @@ class TestSeverityConfidence:
     ])
     def test_severity_maps_to_confidence(self, engine, severity, min_conf, max_conf):
         rules = [
-            {"id": "SEV", "name": "Severity Test", "pattern": r"trigger", "target": "all", "severity": severity, "action": "block"},
+            {
+                "id": "SEV", "name": "Severity Test", "pattern": r"trigger",
+                "target": "all", "severity": severity, "action": "block",
+            },
         ]
         engine.load_rules(rules)
         req = make_parsed_request(body="trigger")

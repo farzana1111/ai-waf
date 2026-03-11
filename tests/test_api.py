@@ -2,7 +2,7 @@
 
 import pytest
 
-from waf.api.routes import api, _recent_detections
+from waf.api.routes import api  # noqa: F401
 from waf.core.proxy import create_app
 
 
