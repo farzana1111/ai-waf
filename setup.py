@@ -39,6 +39,6 @@ setup(
     ],
     include_package_data=True,
     package_data={
-        "waf": ["config/*.yaml"],
+        "waf": ["config/*.yaml", "rules/*.yaml"],
     },
 )
