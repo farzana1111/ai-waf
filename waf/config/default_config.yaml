@@ -1,0 +1,47 @@
+waf:
+  mode: "detect"  # detect or prevent
+  backend_url: "http://localhost:8080"
+  listen_host: "0.0.0.0"
+  listen_port: 5000
+
+security:
+  api_key: "change-me"
+  secret_key: "change-me-in-production"
+
+detection:
+  sqli:
+    enabled: true
+    threshold: 0.7
+    use_ml: true
+    use_rules: true
+  xss:
+    enabled: true
+    threshold: 0.7
+    use_ml: true
+    use_rules: true
+  anomaly:
+    enabled: true
+    threshold: 0.8
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    burst_size: 20
+
+models:
+  directory: "models/"
+  auto_reload: true
+  reload_interval: 300
+
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/waf.log"
+
+threat_intel:
+  enabled: true
+  feeds: []
+  cache_ttl: 3600
+
+metrics:
+  enabled: true
+  port: 9090
