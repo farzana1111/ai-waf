@@ -253,6 +253,8 @@ python -m scripts.smoke_test --mode monitor
 ──────────────────────────────────────────────────────────────────────
 ```
 
+> If any test fails it will show `[FAIL]` in red with the expected vs. actual result, and the script exits with code 1.
+
 ### 4. Test with curl (live server)
 
 Start the FastAPI WAF (proxying to any upstream, e.g. `httpbin.org`):
