@@ -14,13 +14,21 @@ setup(
     name="ai-waf",
     version="0.1.0",
     author="AI-WAF Contributors",
-    description="AI-Powered Web Application Firewall",
+    description="AI-Powered Web Application Firewall with intelligent ML-based threat detection",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ai-waf/ai-waf",
     packages=find_packages(exclude=["tests*", "training*", "docker*", "docs*"]),
     python_requires=">=3.10",
     install_requires=requirements,
+    extras_require={
+        "dev": [
+            "pytest>=8.2.0",
+            "pytest-cov>=4.1.0",
+            "pytest-asyncio>=0.23.0",
+            "flake8>=6.1.0",
+            "black>=23.0.0",
+        ],
+    },
     entry_points={
         "console_scripts": [
             "ai-waf=waf.app:main",

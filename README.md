@@ -1,61 +1,114 @@
 # AI-WAF — AI-Powered Web Application Firewall
 
-An intelligent reverse-proxy Web Application Firewall that combines **machine-learning models** with a traditional **rules engine** to detect and block malicious HTTP traffic in real time.
+An intelligent Web Application Firewall that combines **machine-learning models** with **OWASP-inspired rule-based detection** to identify and block web-layer attacks in real time.
+
+---
 
 ## Features
 
-- **ML-Based Attack Detection** — trained classifiers for SQL injection (SQLi), cross-site scripting (XSS), and DDoS patterns.
-- **Anomaly Detection** — unsupervised model flags requests that deviate from learned baselines.
-- **Hybrid Rules Engine** — signature-based rules run alongside ML models for defence-in-depth.
-- **Real-Time Threat Intelligence** — integrates external threat feeds for IP reputation and IOC matching.
-- **Explainable AI** — every detection decision includes feature-importance explanations.
-- **REST Management API** — query stats, update rules, and retrain models without restarts.
-- **Prometheus Metrics** — built-in `/metrics` endpoint for monitoring and alerting.
+| Capability | Details |
+|---|---|
+| **ML threat detection** | Character-level TF-IDF + Random Forest classifier trained on labelled attack samples |
+| **Rule engine** | 30+ regex rules covering SQLi, XSS, CMDi, Path Traversal, LDAP, XXE, SSRF, scanner detection |
+| **Dual proxy mode** | Flask reverse proxy and FastAPI transparent proxy options |
+| **Dual action mode** | `block` (return 403) or `monitor` / `detect` (log & pass) |
+| **Rate limiting** | Sliding-window per-IP rate limiter |
+| **Anomaly detection** | Isolation Forest unsupervised model flags request deviations |
+| **Threat intelligence** | IP reputation scoring and CTI feed integration |
+| **Explainable AI** | Every detection decision includes feature-importance explanations |
+| **Management API** | REST endpoints for stats, rules, config, and retraining |
+| **Prometheus metrics** | Built-in `/metrics` endpoint for monitoring and alerting |
+
+---
+
+## Architecture
+
+```
+Client → [AI-WAF Proxy]
+                │
+         ┌──────┴──────┐
+         │  WAFEngine  │
+         ├─────────────┤
+         │ RateLimit   │  ← per-IP sliding window
+         │ Features    │  ← URL decode, char stats, entropy
+         │ RuleEngine  │  ← 30+ OWASP regex rules
+         │ MLDetector  │  ← TF-IDF + RandomForest
+         │ AnomalyDet  │  ← Isolation Forest
+         └──────┬──────┘
+                │ allow / block
+         [Upstream Server]
+```
+
+---
 
 ## Quick Start
 
+### Option 1: FastAPI-based WAF
+
 ```bash
-# 1. Clone the repository
-git clone https://github.com/ai-waf/ai-waf.git
-cd ai-waf
+# Install
+pip install -e .
 
-# 2. Create a virtual environment
-python -m venv venv
-source venv/bin/activate
+# Train the ML model
+python -m scripts.train_model
 
-# 3. Install dependencies
-make install          # production deps
-# or
-make dev-install      # production + dev/test deps
+# Run the WAF
+WAF_UPSTREAM_URL=http://localhost:8080 uvicorn waf.api:create_app --factory --port 8000
+```
 
-# 4. Copy and edit the environment file
+### Option 2: Flask-based WAF
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy and edit the environment file
 cp .env.example .env
 
-# 5. Run the WAF
+# Run the WAF
 make run
 ```
+
+### Test a request
+
+```bash
+# Clean request — forwarded to upstream
+curl http://localhost:8000/api/users?page=1
+
+# SQL injection — blocked with 403
+curl "http://localhost:8000/search?q=' OR '1'='1 UNION SELECT null--"
+```
+
+---
 
 ## Project Structure
 
 ```
 ai-waf/
 ├── waf/                     # Main application package
-│   ├── ai/                  # ML detection engine
+│   ├── core.py              # FastAPI WAF engine
+│   ├── api.py               # FastAPI endpoints
+│   ├── config.py            # FastAPI config (pydantic-settings)
+│   ├── detector.py          # ML threat detector
+│   ├── features.py          # Feature extraction
+│   ├── rules.py             # Rule engine (30+ rules)
+│   ├── logger.py            # Structured logging
+│   ├── model/               # ML model training & artifacts
+│   ├── ai/                  # Extended ML detection engine
 │   │   └── models/          # Model definitions & loaders
-│   ├── api/                 # REST API endpoints
-│   ├── config/              # Configuration & YAML defaults
-│   ├── core/                # Reverse-proxy & request handling
-│   ├── logging/             # Structured logging
-│   ├── rules/               # Signature / rule-based detection
+│   ├── api/                 # Flask REST API endpoints
+│   ├── config/              # YAML configuration & defaults
+│   ├── core/                # Flask reverse-proxy & request handling
+│   ├── logging/             # Structured logging (Flask)
+│   ├── rules/               # Signature / rule-based detection (Flask)
 │   ├── threat_intel/        # Threat-feed integration
 │   └── utils/               # Shared helpers
+├── scripts/                 # FastAPI training scripts
 ├── tests/                   # Test suite
-├── training/                # Model training scripts & data
-│   ├── datasets/
-│   └── notebooks/
+├── training/                # Flask model training scripts & data
 ├── docker/                  # Docker & Compose files
 ├── docs/                    # Documentation
-├── models/                  # Serialised ML models (*.pkl)
+├── models/                  # Serialised ML models
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── setup.py
@@ -63,52 +116,82 @@ ai-waf/
 └── .env.example
 ```
 
+---
+
 ## Configuration
 
-Configuration is resolved in the following order (highest priority first):
+All settings are loaded from environment variables (prefix `WAF_`) or a `.env` file.
 
-1. **Environment variables** — prefixed with `WAF_` (e.g. `WAF_BACKEND_URL`).
-2. **Custom YAML** — set `WAF_CONFIG_PATH` to point at your own file.
-3. **default_config.yaml** — sensible defaults shipped with the package.
-
-Key settings live in `waf/config/default_config.yaml`. See `.env.example` for the most common overrides.
-
-| Variable | Description | Default |
+| Variable | Default | Description |
 |---|---|---|
-| `WAF_MODE` | `detect` (log only) or `prevent` (block) | `detect` |
-| `WAF_BACKEND_URL` | Upstream server to proxy traffic to | `http://localhost:8080` |
-| `WAF_LISTEN_PORT` | Port the WAF listens on | `5000` |
-| `WAF_LOG_LEVEL` | Logging verbosity | `INFO` |
-| `WAF_MODEL_DIR` | Directory containing serialised models | `models/` |
+| `WAF_UPSTREAM_URL` / `WAF_BACKEND_URL` | `http://localhost:8080` | Backend URL |
+| `WAF_LISTEN_PORT` | `8000` / `5000` | WAF listen port |
+| `WAF_MODE` | `block` | `block` / `monitor` / `detect` / `prevent` |
+| `WAF_ENABLE_ML` | `true` | Enable ML detector |
+| `WAF_ENABLE_RULES` | `true` | Enable rule engine |
+| `WAF_ML_CONFIDENCE_THRESHOLD` | `0.70` | Min ML confidence to flag a threat |
+| `WAF_RATE_LIMIT_ENABLED` | `true` | Enable rate limiting |
+| `WAF_RATE_LIMIT_REQUESTS` | `100` | Max requests per window |
+| `WAF_MODEL_PATH` | `waf/model/threat_model.joblib` | Path to trained model |
+| `WAF_LOG_LEVEL` | `INFO` | Logging level |
+| `WAF_MODEL_DIR` | `models/` | Directory for Flask WAF models |
 
-## API Endpoints
+---
 
-| Method | Path | Description |
-|---|---|---|
-| `ANY` | `/*` | Reverse-proxy — all traffic is inspected then forwarded |
-| `GET` | `/api/v1/health` | Health-check |
-| `GET` | `/api/v1/stats` | Detection statistics & counters |
-| `GET` | `/api/v1/config` | Current running configuration |
-| `POST` | `/api/v1/rules` | Add or update detection rules |
-| `GET` | `/api/v1/threats` | Recent threat detections |
-| `POST` | `/api/v1/train` | Trigger model retraining |
-| `GET` | `/metrics` | Prometheus metrics |
+## Management API
+
+### FastAPI endpoints
+```
+GET  /waf/health       # Health check
+GET  /waf/stats        # Request statistics
+POST /waf/evaluate     # Manual threat evaluation
+```
+
+### Flask API endpoints
+```
+GET  /api/status       # WAF status
+GET  /api/metrics      # Metrics data
+GET  /api/rules        # List rules
+POST /api/rules        # Add rule
+GET  /api/threats      # Recent detections
+POST /api/config       # Update config
+GET  /api/ip/blocklist # IP blocklist
+```
+
+---
+
+## Detected Threat Categories
+
+- **SQL Injection** (tautologies, UNION SELECT, stacked queries, time-based blind)
+- **Cross-Site Scripting** (script tags, event handlers, javascript: URIs, DOM sinks)
+- **Command Injection** (shell pipes, backtick execution, command substitution)
+- **Path Traversal** (../, URL-encoded, double-encoded variants)
+- **LDAP Injection**
+- **XML External Entity (XXE)**
+- **Server-Side Request Forgery (SSRF)**
+- **Automated Scanners** (sqlmap, nikto, nmap, acunetix)
+
+---
+
+## Running Tests
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+---
 
 ## Development
 
 ```bash
-# Run linter & formatter check
-make lint
-
-# Auto-format code
-make format
-
-# Run tests with coverage
-make test
-
-# Build Docker image
-make docker-build
+make lint        # Run linter
+make format      # Auto-format code
+make test        # Run tests with coverage
+make docker-build # Build Docker image
 ```
+
+---
 
 ## License
 

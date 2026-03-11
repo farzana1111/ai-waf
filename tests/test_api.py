@@ -1,4 +1,4 @@
-"""Tests for the WAF management API endpoints."""
+"""Tests for the WAF management API endpoints (Flask-based)."""
 
 import pytest
 
@@ -11,7 +11,6 @@ def app():
     """Create a Flask application with the API blueprint registered."""
     application = create_app()
     application.config["TESTING"] = True
-    # Register the API blueprint if not already registered
     if "api" not in application.blueprints:
         application.register_blueprint(api)
     return application
